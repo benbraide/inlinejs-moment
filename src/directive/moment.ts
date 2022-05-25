@@ -101,12 +101,12 @@ export const MomentDirectiveHandler = CreateDirectiveHandlerCallback(MomentConce
 
             if (prop === 'stopped'){
                 FindComponentById(componentId)?.GetBackend().changes.AddGetAccess(`${id}.${prop}`);
-                return info?.stopped();
+                return (info ? info.stopped() : true);
             }
         },
         setter: (prop, value) => {
-            if (prop === 'stopped'){
-                if (!!value != !!info?.stopped()){
+            if (prop === 'stopped' && info){
+                if (!!value != !!info.stopped()){
                     value ? info?.stop() : info?.resume();
                     AddChanges('set', `${id}.${prop}`, prop, FindComponentById(componentId)?.GetBackend().changes);
                 }
