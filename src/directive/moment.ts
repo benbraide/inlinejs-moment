@@ -65,7 +65,7 @@ export const MomentDirectiveHandler = CreateDirectiveHandlerCallback(MomentConce
             }
 
             stopCurrent();
-            if (date){//Valid date specified
+            if (date && !isNaN(date.getTime())){//Valid date specified
                 info = GetGlobal().GetConcept<IMomentConcept>(MomentConceptName)?.Track({ date, ...options,
                     startImmediately: !options.stopped,
                     handler: (label) => {
@@ -87,21 +87,24 @@ export const MomentDirectiveHandler = CreateDirectiveHandlerCallback(MomentConce
         }),
     });
 
+    const passValue = <T>(prop: string, value: T) => {
+        GetGlobal().GetCurrentProxyAccessStorage()?.Put(componentId, `${id}.${prop}`);
+        return value;
+    };
+
     elementScope.SetLocal(localKey, CreateInplaceProxy(BuildProxyOptions({
         getter: (prop) => {
             if (prop === 'valid'){
-                FindComponentById(componentId)?.GetBackend().changes.AddGetAccess(`${id}.${prop}`);
-                return valid;
+                GetGlobal().GetCurrentProxyAccessStorage()?.Put(componentId, `${id}.${prop}`);
+                return passValue(prop, valid);
             }
 
             if (prop === 'label'){
-                FindComponentById(componentId)?.GetBackend().changes.AddGetAccess(`${id}.${prop}`);
-                return savedLabel;
+                return passValue(prop, savedLabel);
             }
 
             if (prop === 'stopped'){
-                FindComponentById(componentId)?.GetBackend().changes.AddGetAccess(`${id}.${prop}`);
-                return (info ? info.stopped() : true);
+                return passValue(prop, info ? info.stopped() : true);
             }
         },
         setter: (prop, value) => {

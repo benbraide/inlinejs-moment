@@ -67,7 +67,10 @@ export class MomentConcept implements IMomentConcept{
             return [...this.Format_({ ...rest,
                 seconds: Math.floor((now - then) / 1000),
                 computeNext: ({ seconds, checkpoint }) => {
-                    return (checkpoint.next ? ((checkpoint.value < 60) ? (checkpoint.value - seconds) : (checkpoint.value - (seconds % checkpoint.value))) : 0);
+                    if (checkpoint.value < 60){
+                        return (checkpoint.next ? (checkpoint.next - seconds) : 0);
+                    }
+                    return (checkpoint.value - (seconds % checkpoint.value));
                 },
                 computeLabel: ({ checkpoint, ...rest }) => this.ComputeLabel_({ ...rest,
                     label: (checkpoint.ago || checkpoint.label || ''),
@@ -129,7 +132,7 @@ export class MomentConcept implements IMomentConcept{
     }
 
     private Format_({ seconds, computeNext, computeLabel, ...rest }: IMomentLocalFormatParams): [string, number]{
-        let checkpointIndex = this.checkpoints_.findIndex(checkpoint => (checkpoint.value < seconds));
+        let checkpointIndex = this.checkpoints_.findIndex(checkpoint => (checkpoint.value <= seconds));
         if (checkpointIndex == -1){
             return ['', 0];
         }
